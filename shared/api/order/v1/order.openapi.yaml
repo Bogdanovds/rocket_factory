@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: OrderService API
+  version: 1.0.0
+  description: API сервиса управления заказами на постройку космических кораблей.
+x-ogen:
+  target: .shared/pkg/openapi/order/v1
+  package: order_v1
+  clean: true
+
+tags:
+  - name: Order
+    description: Сервис взаимодействует с InventoryService для расчёта цены заказа и с PaymentService для проведения оплаты.
+
+paths:
+  /api/v1/orders:
+    $ref: "./paths/orders.yaml"

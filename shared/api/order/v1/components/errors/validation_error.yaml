@@ -1,0 +1,27 @@
+type: object
+required:
+  - code
+  - message
+  - details
+properties:
+  code:
+    type: integer
+    description: HTTP-код ошибки
+    example: 422
+  message:
+    type: string
+    description: Общее описание ошибки валидации
+    example: "Validation Error: Invalid input data"
+  details:
+    type: array
+    items:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Поле с ошибкой
+          example: "email"
+        error:
+          type: string
+          description: Описание ошибки для конкретного поля
+          example: "must be a valid email address"

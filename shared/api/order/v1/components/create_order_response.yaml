@@ -1,23 +1,15 @@
 type: object
 required:
-  - user_uuid
-  - part_uuids
+  - order_uuid
+  - total_price
 properties:
-  user_uuid:
+  order_uuid:
     type: string
-    description: user uuid
-    minLength: 1
-    maxLength: 100
-    example: "a81bc81b-dead-4e5d-abff-90865d1e13b1"
-  part_uuids:
-    type: array
-    description: part uuids
-    minItems: 1
-    items:
-      type: string
-      format: uuid
-      example: "a81bc81b-dead-4e5d-abff-90865d1e13b1"
-    example:
-      part_uuids:
-        - "550e8400-e29b-41d4-a716-446655440001"
-        - "550e8400-e29b-41d4-a716-446655440002"
+    format: uuid
+    description: UUID созданного заказа
+    example: "c3d4e5f6-g7h8-9012-i3j4-k5l6m7n8o9p0"
+  total_price:
+    type: number
+    format: float
+    description: Общая стоимость заказа
+    example: 123.45

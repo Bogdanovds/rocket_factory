@@ -10,4 +10,4 @@ properties:
   message:
     type: string
     description: Описание ошибки
-    example: "Order not found"
+    example: "Not Found: The requested resource was not found"

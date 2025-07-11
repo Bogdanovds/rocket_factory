@@ -1,0 +1,9 @@
+type: object
+required:
+  - transaction_uuid
+properties:
+  transaction_uuid:
+    type: string
+    format: uuid
+    description: UUID созданной транзакции
+    example: "d4e5f6g7-h8i9-0123-j4k5-l6m7n8o9p0q1"

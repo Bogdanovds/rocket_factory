@@ -10,4 +10,4 @@ properties:
   message:
     type: string
     description: Описание ошибки
-    example: "Internal server error occurred"
+    example: "Internal Server Error: Server encountered an unexpected condition"

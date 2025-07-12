@@ -1,6 +1,6 @@
 post:
   tags:
-    - Orders
+    - Order
   summary: Создание нового заказа
   description: Создаёт новый заказ на основе выбранных пользователем деталей
   requestBody:
@@ -17,7 +17,11 @@ post:
           schema:
             $ref: "../components/create_order_response.yaml"
     '400':
-      $ref: "../components/errors/bad_request_error.yaml"
+      description: Ошибка в запросе
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/bad_request_error.yaml"
     '404':
       description: Одна или несколько деталей не найдены
       content:
@@ -25,4 +29,8 @@ post:
           schema:
             $ref: "../components/errors/not_found_error.yaml"
     '500':
-      $ref: "../components/errors/internal_server_error.yaml"
+      description: Успешное создание заказа
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/internal_server_error.yaml"

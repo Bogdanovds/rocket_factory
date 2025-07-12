@@ -1,6 +1,6 @@
 post:
   tags:
-    - Orders
+    - Order
   summary: Оплата заказа
   description: Проводит оплату ранее созданного заказа
   parameters:
@@ -18,6 +18,12 @@ post:
         application/json:
           schema:
             $ref: "../components/pay_order_response.yaml"
+    '400':
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/bad_request_error.yaml"
     '404':
       description: Заказ не найден
       content:
@@ -31,4 +37,8 @@ post:
           schema:
             $ref: "../components/errors/conflict_error.yaml"
     '500':
-      $ref: "../components/errors/internal_server_error.yaml"
+      description: Успешная оплата заказа
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/internal_server_error.yaml"

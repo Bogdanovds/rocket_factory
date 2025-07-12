@@ -30,9 +30,8 @@ properties:
     description: UUID транзакции (если есть)
     nullable: true
   payment_method:
-    $ref: "#/components/schemas/PaymentMethod"
+    $ref: "../components/enums/payment_method.yaml"
     description: Способ оплаты (если есть)
     nullable: true
   status:
-    $ref: "#/components/schemas/OrderStatus"
-    description: Текущий статус заказа
+    $ref: "../components/enums/order_status.yaml"

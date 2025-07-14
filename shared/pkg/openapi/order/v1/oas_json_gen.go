@@ -1250,14 +1250,14 @@ func (s *PaymentMethod) Decode(d *jx.Decoder) error {
 	switch PaymentMethod(v) {
 	case PaymentMethodUNKNOWN:
 		*s = PaymentMethodUNKNOWN
-	case PaymentMethodCARD:
-		*s = PaymentMethodCARD
-	case PaymentMethodSBP:
-		*s = PaymentMethodSBP
-	case PaymentMethodCREDITCARD:
-		*s = PaymentMethodCREDITCARD
-	case PaymentMethodINVESTORMONEY:
-		*s = PaymentMethodINVESTORMONEY
+	case PaymentMethodPAYMENTMETHODCARD:
+		*s = PaymentMethodPAYMENTMETHODCARD
+	case PaymentMethodPAYMENTMETHODSBP:
+		*s = PaymentMethodPAYMENTMETHODSBP
+	case PaymentMethodPAYMENTMETHODCREDITCARD:
+		*s = PaymentMethodPAYMENTMETHODCREDITCARD
+	case PaymentMethodPAYMENTMETHODINVESTORMONEY:
+		*s = PaymentMethodPAYMENTMETHODINVESTORMONEY
 	default:
 		*s = PaymentMethod(v)
 	}

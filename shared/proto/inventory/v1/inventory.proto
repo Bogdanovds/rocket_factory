@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package inventory.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "/Users/dmitrijbogdanov/go/src/github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1;inventory_v1";
+
+// InventoryService предоставляет методы для работы с информацией о деталях космических кораблей
+service InventoryService {
+  // GetPart возвращает информацию о детали по её UUID
+  rpc GetPart(GetPartRequest) returns (GetPartResponse);
+
+  // ListParts возвращает список деталей с возможностью фильтрации
+  rpc ListParts(ListPartsRequest) returns (ListPartsResponse);
+}
+
+// Запрос для получения информации о конкретной детали
+message GetPartRequest {
+  // UUID детали, которую нужно найти
+  string uuid = 1;
+}
+
+// Ответ с информацией о запрошенной детали
+message GetPartResponse {
+  // Найденная деталь. Будет пустым, если деталь не найдена.
+  Part part = 1;
+}
+
+// Запрос для получения списка деталей с фильтрацией
+message ListPartsRequest {
+  // Фильтр для отбора деталей. Если не указан, возвращаются все детали.
+  PartsFilter filter = 1;
+}
+
+// Ответ со списком найденных деталей
+message ListPartsResponse {
+  // Список деталей, удовлетворяющих условиям фильтра
+  repeated Part parts = 1;
+}
+
+// Фильтр для отбора деталей
+message PartsFilter {
+  // Список UUID'ов для фильтрации. Пустой список означает отсутствие фильтрации по UUID.
+  // Фильтрация по UUID работает как логическое ИЛИ (деталь должна иметь один из указанных UUID).
+  repeated string uuids = 1;
+
+  // Список имён для фильтрации. Пустой список означает отсутствие фильтрации по имени.
+  // Фильтрация по имени работает как логическое ИЛИ (деталь должна иметь одно из указанных имён).
+  repeated string names = 2;
+
+  // Список категорий для фильтрации. Пустой список означает отсутствие фильтрации по категории.
+  // Фильтрация по категории работает как логическое ИЛИ (деталь должна быть в одной из указанных категорий).
+  repeated Category categories = 3;
+
+  // Список стран производителей для фильтрации. Пустой список означает отсутствие фильтрации по стране.
+  // Фильтрация по стране работает как логическое ИЛИ (деталь должна быть произведена в одной из указанных стран).
+  repeated string manufacturer_countries = 4;
+
+  // Список тегов для фильтрации. Пустой список означает отсутствие фильтрации по тегам.
+  // Фильтрация по тегам работает как логическое ИЛИ (деталь должна иметь хотя бы один из указанных тегов).
+  repeated string tags = 5;
+}
+
+// Деталь космического корабля
+message Part {
+  // Уникальный идентификатор детали
+  string uuid = 1;
+
+  // Название детали
+  string name = 2;
+
+  // Описание детали
+  string description = 3;
+
+  // Цена за единицу в условных единицах
+  double price = 4;
+
+  // Количество единиц на складе
+  int64 stock_quantity = 5;
+
+  // Категория детали
+  Category category = 6;
+
+  // Физические размеры детали
+  Dimensions dimensions = 7;
+
+  // Информация о производителе
+  Manufacturer manufacturer = 8;
+
+  // Теги для быстрого поиска
+  repeated string tags = 9;
+
+  // Гибкие метаданные в формате ключ-значение
+  map<string, Value> metadata = 10;
+
+  // Дата создания записи о детали
+  google.protobuf.Timestamp created_at = 11;
+
+  // Дата последнего обновления информации о детали
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// Категории деталей космического корабля
+enum Category {
+  // Неизвестная категория (по умолчанию)
+  CATEGORY_UNSPECIFIED = 0;
+
+  // Двигательные системы
+  CATEGORY_ENGINE = 1;
+
+  // Топливные системы и компоненты
+  CATEGORY_FUEL = 2;
+
+  // Иллюминаторы и обзорные системы
+  CATEGORY_PORTHOLE = 3;
+
+  // Крылья и аэродинамические поверхности
+  CATEGORY_WING = 4;
+}
+
+// Физические размеры детали
+message Dimensions {
+  // Длина в сантиметрах
+  double length = 1;
+
+  // Ширина в сантиметрах
+  double width = 2;
+
+  // Высота в сантиметрах
+  double height = 3;
+
+  // Вес в килограммах
+  double weight = 4;
+}
+
+// Информация о производителе детали
+message Manufacturer {
+  // Название компании-производителя
+  string name = 1;
+
+  // Страна производства
+  string country = 2;
+
+  // Веб-сайт производителя
+  string website = 3;
+}
+
+// Универсальное значение для метаданных
+message Value {
+  // Тип значения (один из возможных вариантов)
+  oneof value {
+    // Строковое значение
+    string string_value = 1;
+
+    // Целочисленное значение
+    int64 int64_value = 2;
+
+    // Число с плавающей точкой
+    double double_value = 3;
+
+    // Логическое значение
+    bool bool_value = 4;
+  }
+}

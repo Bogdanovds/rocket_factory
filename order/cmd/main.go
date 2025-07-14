@@ -14,50 +14,61 @@ import (
 	"syscall"
 	"time"
 
-	order_v1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
+	inventoryV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1"
+	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 )
 
 const (
-	httpPort          = "8080"
-	readHeaderTimeout = 5 * time.Second
-	shutdownTimeout   = 10 * time.Second
+	httpPort             = "8080"
+	inventoryServicePort = "50051"
+	paymentServicePort   = "50052"
+	readHeaderTimeout    = 5 * time.Second
+	shutdownTimeout      = 10 * time.Second
 )
 
 type OrderStorage struct {
 	mu     sync.RWMutex
-	orders map[string]*order_v1.OrderDto
+	orders map[string]*orderV1.OrderDto
 }
 
 func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{
-		orders: make(map[string]*order_v1.OrderDto),
+		orders: make(map[string]*orderV1.OrderDto),
 	}
 }
 
 type OrderHandler struct {
-	storage *OrderStorage
+	PaymentService   paymentV1.PaymentServiceClient
+	InventoryService inventoryV1.InventoryServiceClient
+	storage          *OrderStorage
 }
 
-func NewOrderHandler(storage *OrderStorage) *OrderHandler {
+func NewOrderHandler(storage *OrderStorage, paymentConn, inventoryConn *grpc.ClientConn) *OrderHandler {
 	return &OrderHandler{
-		storage: storage,
+		storage:          storage,
+		PaymentService:   paymentV1.NewPaymentServiceClient(paymentConn),
+		InventoryService: inventoryV1.NewInventoryServiceClient(inventoryConn),
 	}
 }
 
 // OrdersOrderUUIDCancelPost implements POST /orders/{order_uuid}/cancel operation.
 // Отменяет заказ, если он ещё не оплачен.
 func (o *OrderHandler) OrdersOrderUUIDCancelPost(ctx context.Context,
-	params order_v1.OrdersOrderUUIDCancelPostParams,
-) (order_v1.OrdersOrderUUIDCancelPostRes, error) {
+	params orderV1.OrdersOrderUUIDCancelPostParams,
+) (orderV1.OrdersOrderUUIDCancelPostRes, error) {
 	o.storage.mu.Lock()
 	defer o.storage.mu.Unlock()
 
 	orderUUID, err := uuid.Parse(params.OrderUUID.String())
 	if err != nil {
-		return &order_v1.BadRequestError{
+		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid order UUID format",
 		}, nil
@@ -65,49 +76,49 @@ func (o *OrderHandler) OrdersOrderUUIDCancelPost(ctx context.Context,
 
 	ord, exists := o.storage.orders[orderUUID.String()]
 	if !exists {
-		return &order_v1.NotFoundError{
+		return &orderV1.NotFoundError{
 			Code:    http.StatusNotFound,
 			Message: fmt.Sprintf("Order with UUID %s not found", params.OrderUUID),
 		}, nil
 	}
 
 	switch ord.Status {
-	case order_v1.OrderStatusPAID:
-		return &order_v1.ConflictError{
+	case orderV1.OrderStatusPAID:
+		return &orderV1.ConflictError{
 			Code:    http.StatusConflict,
 			Message: "Cannot cancel already paid order",
 		}, nil
-	case order_v1.OrderStatusCANCELLED:
-		return &order_v1.ConflictError{
+	case orderV1.OrderStatusCANCELLED:
+		return &orderV1.ConflictError{
 			Code:    http.StatusConflict,
 			Message: "Order already cancelled",
 		}, nil
-	case order_v1.OrderStatusFULFILLED:
-		return &order_v1.ConflictError{
+	case orderV1.OrderStatusFULFILLED:
+		return &orderV1.ConflictError{
 			Code:    http.StatusConflict,
 			Message: "Cannot cancel fulfilled order",
 		}, nil
 	}
 
 	// Отменяем заказ
-	if ord.Status == order_v1.OrderStatusPENDINGPAYMENT {
-		ord.Status = order_v1.OrderStatusCANCELLED
+	if ord.Status == orderV1.OrderStatusPENDINGPAYMENT {
+		ord.Status = orderV1.OrderStatusCANCELLED
 	}
 
-	return &order_v1.OrdersOrderUUIDCancelPostNoContent{}, nil
+	return &orderV1.OrdersOrderUUIDCancelPostNoContent{}, nil
 }
 
 // OrdersOrderUUIDGet  implements GET /orders/{order_uuid} operation.
 // Возвращает информацию о заказе по его UUID.
 func (o *OrderHandler) OrdersOrderUUIDGet(ctx context.Context,
-	params order_v1.OrdersOrderUUIDGetParams,
-) (order_v1.OrdersOrderUUIDGetRes, error) {
+	params orderV1.OrdersOrderUUIDGetParams,
+) (orderV1.OrdersOrderUUIDGetRes, error) {
 	o.storage.mu.RLock()
 	defer o.storage.mu.RUnlock()
 
 	orderUUID, err := uuid.Parse(params.OrderUUID.String())
 	if err != nil {
-		return &order_v1.BadRequestError{
+		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid order UUID format",
 		}, nil
@@ -115,7 +126,7 @@ func (o *OrderHandler) OrdersOrderUUIDGet(ctx context.Context,
 
 	ord, exists := o.storage.orders[orderUUID.String()]
 	if !exists {
-		return &order_v1.NotFoundError{
+		return &orderV1.NotFoundError{
 			Code:    http.StatusNotFound,
 			Message: fmt.Sprintf("Order with UUID %s not found", params.OrderUUID),
 		}, nil
@@ -126,15 +137,15 @@ func (o *OrderHandler) OrdersOrderUUIDGet(ctx context.Context,
 
 // OrdersOrderUUIDPayPost implements POST /orders/{order_uuid}/pay operation.
 // Проводит оплату ранее созданного заказа.
-func (o *OrderHandler) OrdersOrderUUIDPayPost(ctx context.Context, req *order_v1.PayOrderRequest,
-	params order_v1.OrdersOrderUUIDPayPostParams,
-) (order_v1.OrdersOrderUUIDPayPostRes, error) {
+func (o *OrderHandler) OrdersOrderUUIDPayPost(ctx context.Context, req *orderV1.PayOrderRequest,
+	params orderV1.OrdersOrderUUIDPayPostParams,
+) (orderV1.OrdersOrderUUIDPayPostRes, error) {
 	o.storage.mu.Lock()
 	defer o.storage.mu.Unlock()
 
 	orderUUID, err := uuid.Parse(params.OrderUUID.String())
 	if err != nil {
-		return &order_v1.BadRequestError{
+		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid order UUID format",
 		}, nil
@@ -142,98 +153,173 @@ func (o *OrderHandler) OrdersOrderUUIDPayPost(ctx context.Context, req *order_v1
 
 	ord, exists := o.storage.orders[orderUUID.String()]
 	if !exists {
-		return &order_v1.NotFoundError{
+		return &orderV1.NotFoundError{
 			Code:    http.StatusNotFound,
 			Message: fmt.Sprintf("Order with UUID %s not found", params.OrderUUID),
 		}, nil
 	}
 
 	switch ord.Status {
-	case order_v1.OrderStatusPAID:
-		return &order_v1.ConflictError{
+	case orderV1.OrderStatusPAID:
+		return &orderV1.ConflictError{
 			Code:    http.StatusConflict,
 			Message: "Order already paid",
 		}, nil
-	case order_v1.OrderStatusCANCELLED:
-		return &order_v1.ConflictError{
+	case orderV1.OrderStatusCANCELLED:
+		return &orderV1.ConflictError{
 			Code:    http.StatusConflict,
 			Message: "Cannot pay cancelled order",
 		}, nil
-	case order_v1.OrderStatusFULFILLED:
-		return &order_v1.ConflictError{
+	case orderV1.OrderStatusFULFILLED:
+		return &orderV1.ConflictError{
 			Code:    http.StatusConflict,
 			Message: "Cannot pay fulfilled order",
 		}, nil
 	}
 
-	if req.PaymentMethod != "CARD" {
-		return &order_v1.BadRequestError{
+	if req.PaymentMethod != "PAYMENT_METHOD_CARD" {
+		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,
 			Message: "Payment method not card",
 		}, nil
 	}
 
-	// Добавить интеграцию: вызывает PaymentService.PayOrder, передаёт user_uuid, order_uuid и payment_method. Получаетtransaction_uuid.
+	resp, err := o.PaymentService.PayOrder(ctx, &paymentV1.PayOrderRequest{
+		OrderUuid:     params.OrderUUID.String(),
+		UserUuid:      ord.UserUUID.String(),
+		PaymentMethod: convertPaymentMethodToProto(req.PaymentMethod),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("payment failed: %w", err)
+	}
 
 	// Обновляем статус заказа
-	ord.Status = order_v1.OrderStatusPAID
-	ord.PaymentMethod = order_v1.OptPaymentMethod{
+	ord.Status = orderV1.OrderStatusPAID
+	ord.PaymentMethod = orderV1.OptPaymentMethod{
 		Value: req.PaymentMethod,
 		Set:   true,
 	}
-	ord.TransactionUUID = order_v1.OptNilUUID{
-		Value: uuid.New(), // Генерируем UUID транзакции
+
+	transactionUUID, err := uuid.Parse(resp.TransactionUuid)
+	if err != nil {
+		return nil, fmt.Errorf("invalid transaction UUID format: %w", err)
+	}
+
+	ord.TransactionUUID = orderV1.OptNilUUID{
+		Value: transactionUUID,
 		Set:   true,
 		Null:  false,
 	}
 
-	return &order_v1.PayOrderResponse{
+	return &orderV1.PayOrderResponse{
 		TransactionUUID: ord.TransactionUUID.Value,
 	}, nil
 }
 
+func convertPaymentMethodToProto(method orderV1.PaymentMethod) paymentV1.PaymentMethod {
+	switch method {
+	case orderV1.PaymentMethodPAYMENTMETHODCARD:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_CARD
+	case orderV1.PaymentMethodPAYMENTMETHODSBP:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_SBP
+	default:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+	}
+}
+
 // OrdersPost implements POST /orders operation.
 // Создаёт новый заказ на основе выбранных пользователем деталей.
-func (o *OrderHandler) OrdersPost(ctx context.Context, req *order_v1.CreateOrderRequest) (order_v1.OrdersPostRes, error) {
+func (o *OrderHandler) OrdersPost(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.OrdersPostRes, error) {
 	if len(req.PartUuids) == 0 {
-		return &order_v1.BadRequestError{
+		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,
 			Message: "At least one part must be specified",
 		}, nil
 	}
 
-	//  Добавить интеграцию
-	//  Получает детали через InventoryService.ListParts.
-	//	Проверяет, что все детали существуют. Если хотя бы одной нет — возвращает ошибку.
-	//	Считает total_price.
-	//	Генерирует order_uuid.
-	//	Сохраняет заказ со статусом PENDING_PAYMENT.
-	newOrder := &order_v1.OrderDto{
+	partUUIDStrings := make([]string, len(req.PartUuids))
+	for i, uuidVal := range req.PartUuids {
+		partUUIDStrings[i] = uuidVal.String()
+	}
+	partsResp, err := o.InventoryService.ListParts(ctx, &inventoryV1.ListPartsRequest{
+		Filter: &inventoryV1.PartsFilter{
+			Uuids: partUUIDStrings,
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get parts from inventory: %w", err)
+	}
+
+	if len(partsResp.Parts) != len(req.PartUuids) {
+		return &orderV1.NotFoundError{
+			Code:    http.StatusNotFound,
+			Message: "Some parts not found in inventory",
+		}, nil
+	}
+
+	totalPrice := float32(0)
+	for _, part := range partsResp.Parts {
+		totalPrice += float32(part.Price)
+	}
+
+	newOrder := &orderV1.OrderDto{
 		OrderUUID:       uuid.New(),
 		UserUUID:        req.UserUUID,
 		PartUuids:       req.PartUuids,
-		TotalPrice:      0, // добавить расчет по инфе из инвентори
-		TransactionUUID: order_v1.OptNilUUID{Set: false},
-		PaymentMethod:   order_v1.OptPaymentMethod{Set: false},
-		Status:          order_v1.OrderStatusPENDINGPAYMENT,
+		TotalPrice:      totalPrice,
+		TransactionUUID: orderV1.OptNilUUID{Set: false},
+		PaymentMethod:   orderV1.OptPaymentMethod{Set: false},
+		Status:          orderV1.OrderStatusPENDINGPAYMENT,
 	}
 
 	o.storage.mu.Lock()
 	defer o.storage.mu.Unlock()
 	o.storage.orders[newOrder.OrderUUID.String()] = newOrder
 
-	return &order_v1.CreateOrderResponse{
+	return &orderV1.CreateOrderResponse{
 		OrderUUID:  newOrder.OrderUUID,
 		TotalPrice: newOrder.TotalPrice,
 	}, nil
 }
 
 func main() {
-	storage := NewOrderStorage()
-	orderHandler := NewOrderHandler(storage)
-	orderServer, err := order_v1.NewServer(orderHandler)
+	// PaymentService
+	paymentConn, err := grpc.NewClient(
+		"localhost:"+paymentServicePort,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
-		log.Fatalf("ошибка создания сервера OpenAPI: %v", err)
+		log.Printf("failed to connect to payment service: %v", err)
+		return
+	}
+	defer func() {
+		if err := paymentConn.Close(); err != nil {
+			log.Printf("failed to close payment connection: %v", err)
+		}
+	}()
+
+	// InventoryService
+	inventoryConn, err := grpc.NewClient(
+		"localhost:"+inventoryServicePort,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Printf("failed to connect to inventory service: %v", err)
+		return
+	}
+	defer func() {
+		if err := inventoryConn.Close(); err != nil {
+			log.Printf("failed to close inventory connection: %v", err)
+		}
+	}()
+
+	// OrderService
+	storage := NewOrderStorage()
+	orderHandler := NewOrderHandler(storage, paymentConn, inventoryConn)
+	orderServer, err := orderV1.NewServer(orderHandler)
+	if err != nil {
+		log.Printf("failed to create OpenAPI server: %v", err)
+		return
 	}
 
 	r := chi.NewRouter()
@@ -252,15 +338,15 @@ func main() {
 	})
 
 	server := &http.Server{
-		Addr:              net.JoinHostPort("0.0.0.0", httpPort), // <- Используем 0.0.0.0 вместо localhost
+		Addr:              net.JoinHostPort("0.0.0.0", httpPort),
 		Handler:           r,
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
 	go func() {
-		log.Printf("HTTP-сервер запущен на порту %s\n", httpPort)
+		log.Printf("HTTP server started on port %s\n", httpPort)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("Ошибка запуска сервера: %v\n", err)
+			log.Printf("server error: %v\n", err)
 		}
 	}()
 
@@ -269,15 +355,14 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Завершение работы сервера...")
+	log.Println("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
-	err = server.Shutdown(ctx)
-	if err != nil {
-		log.Printf("Ошибка при остановке сервера: %v\n", err)
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("server shutdown error: %v\n", err)
 	}
 
-	log.Println("Сервер остановлен")
+	log.Println("Server stopped")
 }

@@ -3,6 +3,7 @@ post:
     - Order
   summary: Создание нового заказа
   description: Создаёт новый заказ на основе выбранных пользователем деталей
+  operationId: CreateOrder
   requestBody:
     required: true
     content:

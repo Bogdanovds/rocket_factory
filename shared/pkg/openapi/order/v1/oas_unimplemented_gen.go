@@ -13,39 +13,39 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// OrdersOrderUUIDCancelPost implements POST /orders/{order_uuid}/cancel operation.
+// CancelOrder implements CancelOrder operation.
 //
 // Отменяет заказ, если он ещё не оплачен.
 //
 // POST /orders/{order_uuid}/cancel
-func (UnimplementedHandler) OrdersOrderUUIDCancelPost(ctx context.Context, params OrdersOrderUUIDCancelPostParams) (r OrdersOrderUUIDCancelPostRes, _ error) {
+func (UnimplementedHandler) CancelOrder(ctx context.Context, params CancelOrderParams) (r CancelOrderRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// OrdersOrderUUIDGet implements GET /orders/{order_uuid} operation.
-//
-// Возвращает информацию о заказе по его UUID.
-//
-// GET /orders/{order_uuid}
-func (UnimplementedHandler) OrdersOrderUUIDGet(ctx context.Context, params OrdersOrderUUIDGetParams) (r OrdersOrderUUIDGetRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// OrdersOrderUUIDPayPost implements POST /orders/{order_uuid}/pay operation.
-//
-// Проводит оплату ранее созданного заказа.
-//
-// POST /orders/{order_uuid}/pay
-func (UnimplementedHandler) OrdersOrderUUIDPayPost(ctx context.Context, req *PayOrderRequest, params OrdersOrderUUIDPayPostParams) (r OrdersOrderUUIDPayPostRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// OrdersPost implements POST /orders operation.
+// CreateOrder implements CreateOrder operation.
 //
 // Создаёт новый заказ на основе выбранных
 // пользователем деталей.
 //
 // POST /orders
-func (UnimplementedHandler) OrdersPost(ctx context.Context, req *CreateOrderRequest) (r OrdersPostRes, _ error) {
+func (UnimplementedHandler) CreateOrder(ctx context.Context, req *CreateOrderRequest) (r CreateOrderRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// GetOrder implements GetOrder operation.
+//
+// Возвращает информацию о заказе по его UUID.
+//
+// GET /orders/{order_uuid}
+func (UnimplementedHandler) GetOrder(ctx context.Context, params GetOrderParams) (r GetOrderRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// PayOrder implements PayOrder operation.
+//
+// Проводит оплату ранее созданного заказа.
+//
+// POST /orders/{order_uuid}/pay
+func (UnimplementedHandler) PayOrder(ctx context.Context, req *PayOrderRequest, params PayOrderParams) (r PayOrderRes, _ error) {
 	return r, ht.ErrNotImplemented
 }

@@ -3,6 +3,7 @@ get:
     - Order
   summary: Получение информации о заказе
   description: Возвращает информацию о заказе по его UUID
+  operationId: GetOrder
   parameters:
     - $ref: "../params/order_uuid.yaml"
   responses:

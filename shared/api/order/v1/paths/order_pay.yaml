@@ -3,6 +3,7 @@ post:
     - Order
   summary: Оплата заказа
   description: Проводит оплату ранее созданного заказа
+  operationId: PayOrder
   parameters:
     - $ref: "../params/order_uuid.yaml"
   requestBody:

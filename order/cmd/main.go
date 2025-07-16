@@ -60,9 +60,7 @@ func NewOrderHandler(storage *OrderStorage, paymentConn, inventoryConn *grpc.Cli
 
 // OrdersOrderUUIDCancelPost implements POST /orders/{order_uuid}/cancel operation.
 // Отменяет заказ, если он ещё не оплачен.
-func (o *OrderHandler) OrdersOrderUUIDCancelPost(ctx context.Context,
-	params orderV1.OrdersOrderUUIDCancelPostParams,
-) (orderV1.OrdersOrderUUIDCancelPostRes, error) {
+func (o *OrderHandler) CancelOrder(ctx context.Context, params orderV1.CancelOrderParams) (orderV1.CancelOrderRes, error) {
 	o.storage.mu.Lock()
 	defer o.storage.mu.Unlock()
 
@@ -101,18 +99,14 @@ func (o *OrderHandler) OrdersOrderUUIDCancelPost(ctx context.Context,
 	}
 
 	// Отменяем заказ
-	if ord.Status == orderV1.OrderStatusPENDINGPAYMENT {
-		ord.Status = orderV1.OrderStatusCANCELLED
-	}
+	ord.Status = orderV1.OrderStatusCANCELLED
 
-	return &orderV1.OrdersOrderUUIDCancelPostNoContent{}, nil
+	return &orderV1.CancelOrderNoContent{}, nil
 }
 
 // OrdersOrderUUIDGet  implements GET /orders/{order_uuid} operation.
 // Возвращает информацию о заказе по его UUID.
-func (o *OrderHandler) OrdersOrderUUIDGet(ctx context.Context,
-	params orderV1.OrdersOrderUUIDGetParams,
-) (orderV1.OrdersOrderUUIDGetRes, error) {
+func (o *OrderHandler) GetOrder(ctx context.Context, params orderV1.GetOrderParams) (orderV1.GetOrderRes, error) {
 	o.storage.mu.RLock()
 	defer o.storage.mu.RUnlock()
 
@@ -137,9 +131,7 @@ func (o *OrderHandler) OrdersOrderUUIDGet(ctx context.Context,
 
 // OrdersOrderUUIDPayPost implements POST /orders/{order_uuid}/pay operation.
 // Проводит оплату ранее созданного заказа.
-func (o *OrderHandler) OrdersOrderUUIDPayPost(ctx context.Context, req *orderV1.PayOrderRequest,
-	params orderV1.OrdersOrderUUIDPayPostParams,
-) (orderV1.OrdersOrderUUIDPayPostRes, error) {
+func (o *OrderHandler) PayOrder(ctx context.Context, req *orderV1.PayOrderRequest, params orderV1.PayOrderParams) (orderV1.PayOrderRes, error) {
 	o.storage.mu.Lock()
 	defer o.storage.mu.Unlock()
 
@@ -177,10 +169,10 @@ func (o *OrderHandler) OrdersOrderUUIDPayPost(ctx context.Context, req *orderV1.
 		}, nil
 	}
 
-	if req.PaymentMethod != "PAYMENT_METHOD_CARD" {
+	if req.PaymentMethod == "" {
 		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,
-			Message: "Payment method not card",
+			Message: "Payment method is required",
 		}, nil
 	}
 
@@ -222,6 +214,10 @@ func convertPaymentMethodToProto(method orderV1.PaymentMethod) paymentV1.Payment
 		return paymentV1.PaymentMethod_PAYMENT_METHOD_CARD
 	case orderV1.PaymentMethodPAYMENTMETHODSBP:
 		return paymentV1.PaymentMethod_PAYMENT_METHOD_SBP
+	case orderV1.PaymentMethodPAYMENTMETHODCREDITCARD:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_CREDIT_CARD
+	case orderV1.PaymentMethodPAYMENTMETHODINVESTORMONEY:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_INVESTOR_MONEY
 	default:
 		return paymentV1.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
 	}
@@ -229,7 +225,7 @@ func convertPaymentMethodToProto(method orderV1.PaymentMethod) paymentV1.Payment
 
 // OrdersPost implements POST /orders operation.
 // Создаёт новый заказ на основе выбранных пользователем деталей.
-func (o *OrderHandler) OrdersPost(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.OrdersPostRes, error) {
+func (o *OrderHandler) CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.CreateOrderRes, error) {
 	if len(req.PartUuids) == 0 {
 		return &orderV1.BadRequestError{
 			Code:    http.StatusBadRequest,

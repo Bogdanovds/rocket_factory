@@ -35,10 +35,15 @@ func (s *BadRequestError) SetMessage(val string) {
 	s.Message = val
 }
 
-func (*BadRequestError) ordersOrderUUIDCancelPostRes() {}
-func (*BadRequestError) ordersOrderUUIDGetRes()        {}
-func (*BadRequestError) ordersOrderUUIDPayPostRes()    {}
-func (*BadRequestError) ordersPostRes()                {}
+func (*BadRequestError) cancelOrderRes() {}
+func (*BadRequestError) createOrderRes() {}
+func (*BadRequestError) getOrderRes()    {}
+func (*BadRequestError) payOrderRes()    {}
+
+// CancelOrderNoContent is response for CancelOrder operation.
+type CancelOrderNoContent struct{}
+
+func (*CancelOrderNoContent) cancelOrderRes() {}
 
 // Ref: #/components/schemas/conflict_error
 type ConflictError struct {
@@ -68,8 +73,8 @@ func (s *ConflictError) SetMessage(val string) {
 	s.Message = val
 }
 
-func (*ConflictError) ordersOrderUUIDCancelPostRes() {}
-func (*ConflictError) ordersOrderUUIDPayPostRes()    {}
+func (*ConflictError) cancelOrderRes() {}
+func (*ConflictError) payOrderRes()    {}
 
 // Ref: #/components/schemas/create_order_request
 type CreateOrderRequest struct {
@@ -127,7 +132,7 @@ func (s *CreateOrderResponse) SetTotalPrice(val float32) {
 	s.TotalPrice = val
 }
 
-func (*CreateOrderResponse) ordersPostRes() {}
+func (*CreateOrderResponse) createOrderRes() {}
 
 // Ref: #/components/schemas/internal_server_error
 type InternalServerError struct {
@@ -157,10 +162,10 @@ func (s *InternalServerError) SetMessage(val string) {
 	s.Message = val
 }
 
-func (*InternalServerError) ordersOrderUUIDCancelPostRes() {}
-func (*InternalServerError) ordersOrderUUIDGetRes()        {}
-func (*InternalServerError) ordersOrderUUIDPayPostRes()    {}
-func (*InternalServerError) ordersPostRes()                {}
+func (*InternalServerError) cancelOrderRes() {}
+func (*InternalServerError) createOrderRes() {}
+func (*InternalServerError) getOrderRes()    {}
+func (*InternalServerError) payOrderRes()    {}
 
 // Ref: #/components/schemas/not_found_error
 type NotFoundError struct {
@@ -190,10 +195,10 @@ func (s *NotFoundError) SetMessage(val string) {
 	s.Message = val
 }
 
-func (*NotFoundError) ordersOrderUUIDCancelPostRes() {}
-func (*NotFoundError) ordersOrderUUIDGetRes()        {}
-func (*NotFoundError) ordersOrderUUIDPayPostRes()    {}
-func (*NotFoundError) ordersPostRes()                {}
+func (*NotFoundError) cancelOrderRes() {}
+func (*NotFoundError) createOrderRes() {}
+func (*NotFoundError) getOrderRes()    {}
+func (*NotFoundError) payOrderRes()    {}
 
 // NewOptNilUUID returns new OptNilUUID with value set to v.
 func NewOptNilUUID(v uuid.UUID) OptNilUUID {
@@ -391,7 +396,7 @@ func (s *OrderDto) SetStatus(val OrderStatus) {
 	s.Status = val
 }
 
-func (*OrderDto) ordersOrderUUIDGetRes() {}
+func (*OrderDto) getOrderRes() {}
 
 // Статус заказа.
 // Ref: #/components/schemas/order_status
@@ -457,11 +462,6 @@ func (s *OrderStatus) UnmarshalText(data []byte) error {
 	}
 }
 
-// OrdersOrderUUIDCancelPostNoContent is response for OrdersOrderUUIDCancelPost operation.
-type OrdersOrderUUIDCancelPostNoContent struct{}
-
-func (*OrdersOrderUUIDCancelPostNoContent) ordersOrderUUIDCancelPostRes() {}
-
 // Ref: #/components/schemas/pay_order_request
 type PayOrderRequest struct {
 	// Выбранный способ оплаты.
@@ -494,7 +494,7 @@ func (s *PayOrderResponse) SetTransactionUUID(val uuid.UUID) {
 	s.TransactionUUID = val
 }
 
-func (*PayOrderResponse) ordersOrderUUIDPayPostRes() {}
+func (*PayOrderResponse) payOrderRes() {}
 
 // Способ оплаты.
 // Ref: #/components/schemas/payment_method

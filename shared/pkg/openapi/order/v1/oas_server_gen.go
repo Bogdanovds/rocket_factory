@@ -8,31 +8,31 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// OrdersOrderUUIDCancelPost implements POST /orders/{order_uuid}/cancel operation.
+	// CancelOrder implements CancelOrder operation.
 	//
 	// Отменяет заказ, если он ещё не оплачен.
 	//
 	// POST /orders/{order_uuid}/cancel
-	OrdersOrderUUIDCancelPost(ctx context.Context, params OrdersOrderUUIDCancelPostParams) (OrdersOrderUUIDCancelPostRes, error)
-	// OrdersOrderUUIDGet implements GET /orders/{order_uuid} operation.
-	//
-	// Возвращает информацию о заказе по его UUID.
-	//
-	// GET /orders/{order_uuid}
-	OrdersOrderUUIDGet(ctx context.Context, params OrdersOrderUUIDGetParams) (OrdersOrderUUIDGetRes, error)
-	// OrdersOrderUUIDPayPost implements POST /orders/{order_uuid}/pay operation.
-	//
-	// Проводит оплату ранее созданного заказа.
-	//
-	// POST /orders/{order_uuid}/pay
-	OrdersOrderUUIDPayPost(ctx context.Context, req *PayOrderRequest, params OrdersOrderUUIDPayPostParams) (OrdersOrderUUIDPayPostRes, error)
-	// OrdersPost implements POST /orders operation.
+	CancelOrder(ctx context.Context, params CancelOrderParams) (CancelOrderRes, error)
+	// CreateOrder implements CreateOrder operation.
 	//
 	// Создаёт новый заказ на основе выбранных
 	// пользователем деталей.
 	//
 	// POST /orders
-	OrdersPost(ctx context.Context, req *CreateOrderRequest) (OrdersPostRes, error)
+	CreateOrder(ctx context.Context, req *CreateOrderRequest) (CreateOrderRes, error)
+	// GetOrder implements GetOrder operation.
+	//
+	// Возвращает информацию о заказе по его UUID.
+	//
+	// GET /orders/{order_uuid}
+	GetOrder(ctx context.Context, params GetOrderParams) (GetOrderRes, error)
+	// PayOrder implements PayOrder operation.
+	//
+	// Проводит оплату ранее созданного заказа.
+	//
+	// POST /orders/{order_uuid}/pay
+	PayOrder(ctx context.Context, req *PayOrderRequest, params PayOrderParams) (PayOrderRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

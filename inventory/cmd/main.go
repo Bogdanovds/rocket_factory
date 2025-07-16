@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"slices"
 	"sync"
 	"syscall"
 
@@ -37,7 +38,7 @@ func (s *InventoryService) GetPart(ctx context.Context, req *inventoryV1.GetPart
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	part, exists := s.parts[req.Uuid]
+	part, exists := s.parts[req.GetUuid()]
 	if !exists {
 		return nil, status.Errorf(codes.NotFound, "part with UUID %s not found", req.Uuid)
 	}
@@ -50,9 +51,7 @@ func (s *InventoryService) ListParts(ctx context.Context, req *inventoryV1.ListP
 	defer s.mu.RUnlock()
 
 	var parts []*inventoryV1.Part
-
-	// Если фильтр пустой - возвращаем все детали
-	if req.Filter == nil || isEmptyFilter(req.Filter) {
+	if isEmptyFilter(req.Filter) {
 		parts = make([]*inventoryV1.Part, 0, len(s.parts))
 		for _, part := range s.parts {
 			parts = append(parts, part)
@@ -60,7 +59,6 @@ func (s *InventoryService) ListParts(ctx context.Context, req *inventoryV1.ListP
 		return &inventoryV1.ListPartsResponse{Parts: parts}, nil
 	}
 
-	// Фильтрация деталей
 	for _, part := range s.parts {
 		if matchesFilter(part, req.Filter) {
 			parts = append(parts, part)
@@ -71,7 +69,8 @@ func (s *InventoryService) ListParts(ctx context.Context, req *inventoryV1.ListP
 }
 
 func isEmptyFilter(filter *inventoryV1.PartsFilter) bool {
-	return len(filter.Uuids) == 0 &&
+	return filter == nil &&
+		len(filter.Uuids) == 0 &&
 		len(filter.Names) == 0 &&
 		len(filter.Categories) == 0 &&
 		len(filter.ManufacturerCountries) == 0 &&
@@ -80,12 +79,12 @@ func isEmptyFilter(filter *inventoryV1.PartsFilter) bool {
 
 func matchesFilter(part *inventoryV1.Part, filter *inventoryV1.PartsFilter) bool {
 	// Фильтрация по UUID
-	if len(filter.Uuids) > 0 && !contains(filter.Uuids, part.Uuid) {
+	if len(filter.Uuids) > 0 && !slices.Contains(filter.Uuids, part.Uuid) {
 		return false
 	}
 
 	// Фильтрация по имени
-	if len(filter.Names) > 0 && !contains(filter.Names, part.Name) {
+	if len(filter.Names) > 0 && !slices.Contains(filter.Names, part.Name) {
 		return false
 	}
 
@@ -95,7 +94,7 @@ func matchesFilter(part *inventoryV1.Part, filter *inventoryV1.PartsFilter) bool
 	}
 
 	// Фильтрация по стране производителя
-	if len(filter.ManufacturerCountries) > 0 && !contains(filter.ManufacturerCountries, part.Manufacturer.Country) {
+	if len(filter.ManufacturerCountries) > 0 && !slices.Contains(filter.ManufacturerCountries, part.Manufacturer.Country) {
 		return false
 	}
 
@@ -105,15 +104,6 @@ func matchesFilter(part *inventoryV1.Part, filter *inventoryV1.PartsFilter) bool
 	}
 
 	return true
-}
-
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }
 
 func containsCategory(categories []inventoryV1.Category, category inventoryV1.Category) bool {

@@ -58,7 +58,7 @@ func NewOrderHandler(storage *OrderStorage, paymentConn, inventoryConn *grpc.Cli
 	}
 }
 
-// OrdersOrderUUIDCancelPost implements POST /orders/{order_uuid}/cancel operation.
+// CancelOrder implements POST /orders/{order_uuid}/cancel operation.
 // Отменяет заказ, если он ещё не оплачен.
 func (o *OrderHandler) CancelOrder(ctx context.Context, params orderV1.CancelOrderParams) (orderV1.CancelOrderRes, error) {
 	o.storage.mu.Lock()
@@ -104,7 +104,7 @@ func (o *OrderHandler) CancelOrder(ctx context.Context, params orderV1.CancelOrd
 	return &orderV1.CancelOrderNoContent{}, nil
 }
 
-// OrdersOrderUUIDGet  implements GET /orders/{order_uuid} operation.
+// GetOrder  implements GET /orders/{order_uuid} operation.
 // Возвращает информацию о заказе по его UUID.
 func (o *OrderHandler) GetOrder(ctx context.Context, params orderV1.GetOrderParams) (orderV1.GetOrderRes, error) {
 	o.storage.mu.RLock()
@@ -129,7 +129,7 @@ func (o *OrderHandler) GetOrder(ctx context.Context, params orderV1.GetOrderPara
 	return ord, nil
 }
 
-// OrdersOrderUUIDPayPost implements POST /orders/{order_uuid}/pay operation.
+// PayOrder implements POST /orders/{order_uuid}/pay operation.
 // Проводит оплату ранее созданного заказа.
 func (o *OrderHandler) PayOrder(ctx context.Context, req *orderV1.PayOrderRequest, params orderV1.PayOrderParams) (orderV1.PayOrderRes, error) {
 	o.storage.mu.Lock()
@@ -223,7 +223,7 @@ func convertPaymentMethodToProto(method orderV1.PaymentMethod) paymentV1.Payment
 	}
 }
 
-// OrdersPost implements POST /orders operation.
+// CreateOrder implements POST /orders operation.
 // Создаёт новый заказ на основе выбранных пользователем деталей.
 func (o *OrderHandler) CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.CreateOrderRes, error) {
 	if len(req.PartUuids) == 0 {

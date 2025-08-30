@@ -3,8 +3,9 @@ package order
 import (
 	"context"
 
-	"github.com/bogdanovds/rocket_factory/order/internal/model"
 	"github.com/google/uuid"
+
+	"github.com/bogdanovds/rocket_factory/order/internal/model"
 )
 
 func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*model.Order, error) {

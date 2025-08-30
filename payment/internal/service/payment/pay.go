@@ -4,12 +4,13 @@ import (
 	"context"
 	"log"
 
-	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 	"github.com/google/uuid"
+
+	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 )
 
 // payOrder обрабатывает платеж и возвращает UUID транзакции
-func payOrder(ctx context.Context, req *paymentV1.PayOrderRequest) (*paymentV1.PayOrderResponse, error) {
+func payOrder(_ context.Context, req *paymentV1.PayOrderRequest) (*paymentV1.PayOrderResponse, error) {
 	transactionUUID := uuid.New().String()
 
 	log.Printf("Оплата прошла успешно, transaction_uuid: %s\n"+

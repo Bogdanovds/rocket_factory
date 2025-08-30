@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bogdanovds/rocket_factory/order/internal/model"
 	"github.com/google/uuid"
+
+	"github.com/bogdanovds/rocket_factory/order/internal/model"
 )
 
 func (s *Service) CreateOrder(ctx context.Context, userID uuid.UUID, partIDs []uuid.UUID) (*model.Order, error) {

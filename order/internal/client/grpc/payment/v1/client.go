@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
+
+	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 )
 
 type Client struct {

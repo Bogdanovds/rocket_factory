@@ -1,10 +1,11 @@
 package converter
 
 import (
-	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
-	inventoryV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
+	inventoryV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1"
 )
 
 func ToProtoPart(p *model.Part) *inventoryV1.Part {

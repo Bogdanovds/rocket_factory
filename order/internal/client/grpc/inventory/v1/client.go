@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bogdanovds/rocket_factory/order/internal/model"
-	inventoryV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
+
+	"github.com/bogdanovds/rocket_factory/order/internal/model"
+	inventoryV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1"
 )
 
 type Client struct {

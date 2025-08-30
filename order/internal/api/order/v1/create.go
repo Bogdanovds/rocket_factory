@@ -2,11 +2,13 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/google/uuid"
 
 	"github.com/bogdanovds/rocket_factory/order/internal/model"
 	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
-	"github.com/google/uuid"
 )
 
 func (h *Handler) CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.CreateOrderRes, error) {
@@ -22,10 +24,10 @@ func (h *Handler) CreateOrder(ctx context.Context, req *orderV1.CreateOrderReque
 
 	order, err := h.service.CreateOrder(ctx, userID, partIDs)
 	if err != nil {
-		switch err {
-		case model.ErrPartsNotSpecified:
+		switch {
+		case errors.Is(err, model.ErrPartsNotSpecified):
 			return badRequest(err.Error()), nil
-		case model.ErrPartsNotFound:
+		case errors.Is(err, model.ErrPartsNotFound):
 			return notFound(err.Error()), nil
 		default:
 			return nil, fmt.Errorf("service error: %w", err)

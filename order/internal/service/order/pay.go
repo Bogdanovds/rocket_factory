@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/bogdanovds/rocket_factory/order/internal/model"
 	"github.com/google/uuid"
+
+	"github.com/bogdanovds/rocket_factory/order/internal/model"
 )
 
 func (s *Service) PayOrder(ctx context.Context, orderID uuid.UUID, paymentMethod string) (*model.Order, error) {

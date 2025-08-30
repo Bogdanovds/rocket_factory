@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/bogdanovds/rocket_factory/order/internal/model"
 	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
-	"github.com/google/uuid"
 )
 
 func (h *Handler) CancelOrder(ctx context.Context, params orderV1.CancelOrderParams) (orderV1.CancelOrderRes, error) {

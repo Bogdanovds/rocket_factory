@@ -1,9 +1,10 @@
 package order
 
 import (
+	"sync"
+
 	"github.com/bogdanovds/rocket_factory/order/internal/model"
 	"github.com/google/uuid"
-	"sync"
 )
 
 type Repository struct {

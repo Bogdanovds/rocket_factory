@@ -3,11 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	v1 "github.com/bogdanovds/rocket_factory/order/internal/api/order/v1"
-	"github.com/bogdanovds/rocket_factory/order/internal/client/grpc/inventory/v1"
-	"github.com/bogdanovds/rocket_factory/order/internal/client/grpc/payment/v1"
-	"github.com/bogdanovds/rocket_factory/order/internal/repository/order"
-	order2 "github.com/bogdanovds/rocket_factory/order/internal/service/order"
 	"log"
 	"net"
 	"net/http"
@@ -17,12 +12,16 @@ import (
 	"syscall"
 	"time"
 
+	v1 "github.com/bogdanovds/rocket_factory/order/internal/api/order/v1"
+	"github.com/bogdanovds/rocket_factory/order/internal/client/grpc/inventory/v1"
+	"github.com/bogdanovds/rocket_factory/order/internal/client/grpc/payment/v1"
+	"github.com/bogdanovds/rocket_factory/order/internal/repository/order"
+	order2 "github.com/bogdanovds/rocket_factory/order/internal/service/order"
+	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
 )
 
 const (
@@ -38,7 +37,6 @@ func main() {
 	defer func(paymentConn *grpc.ClientConn) {
 		err := paymentConn.Close()
 		if err != nil {
-
 		}
 	}(paymentConn)
 
@@ -46,7 +44,6 @@ func main() {
 	defer func(inventoryConn *grpc.ClientConn) {
 		err := inventoryConn.Close()
 		if err != nil {
-
 		}
 	}(inventoryConn)
 

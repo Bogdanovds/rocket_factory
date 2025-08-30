@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
-	repo "github.com/bogdanovds/rocket_factory/inventory/internal/repository/part"
-	service "github.com/bogdanovds/rocket_factory/inventory/internal/service/part"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
+	api "github.com/bogdanovds/rocket_factory/inventory/internal/api/inventory/v1"
+	repo "github.com/bogdanovds/rocket_factory/inventory/internal/repository/part"
+	service "github.com/bogdanovds/rocket_factory/inventory/internal/service/part"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	api "github.com/bogdanovds/rocket_factory/inventory/internal/api/inventory/v1"
 )
 
 const grpcPort = 50051

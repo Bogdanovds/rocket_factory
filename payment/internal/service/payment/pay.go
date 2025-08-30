@@ -4,9 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/google/uuid"
-
 	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
+	"github.com/google/uuid"
 )
 
 // payOrder обрабатывает платеж и возвращает UUID транзакции

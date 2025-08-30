@@ -1,8 +1,9 @@
 package part
 
 import (
-	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 	"sync"
+
+	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 )
 
 type Repository struct {

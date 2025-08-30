@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/bogdanovds/rocket_factory/payment/internal/model"
-
 	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 )
 

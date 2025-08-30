@@ -3,10 +3,9 @@ package v1
 import (
 	"context"
 
-	"google.golang.org/grpc"
-
 	"github.com/bogdanovds/rocket_factory/payment/internal/service"
 	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
+	"google.golang.org/grpc"
 )
 
 // API представляет gRPC API для платежного сервиса

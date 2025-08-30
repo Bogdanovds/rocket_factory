@@ -2,8 +2,9 @@ package part
 
 import (
 	"context"
-	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 	"slices"
+
+	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 )
 
 func (s *Service) ListParts(ctx context.Context, filter *model.PartsFilter) ([]*model.Part, error) {

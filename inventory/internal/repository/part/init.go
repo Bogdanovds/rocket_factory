@@ -1,11 +1,11 @@
 package part
 
 import (
-	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
-	"github.com/samber/lo"
 	"time"
 
+	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 	"github.com/bogdanovds/rocket_factory/inventory/internal/repository"
+	"github.com/samber/lo"
 )
 
 func SeedParts(repo repository.PartRepository) {

@@ -3,6 +3,7 @@ package part
 import (
 	"context"
 	"errors"
+
 	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 )
 

@@ -2,6 +2,7 @@ package part
 
 import (
 	"context"
+
 	"github.com/bogdanovds/rocket_factory/inventory/internal/model"
 )
 

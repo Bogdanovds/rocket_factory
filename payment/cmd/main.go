@@ -84,17 +84,16 @@ package main
 
 import (
 	"fmt"
-	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/bogdanovds/rocket_factory/payment/internal/service/payment"
+	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/bogdanovds/rocket_factory/payment/internal/service/payment"
 )
 
 const grpcPort = 50052

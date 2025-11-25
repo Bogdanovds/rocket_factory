@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -14,13 +16,15 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	v1 "github.com/bogdanovds/rocket_factory/order/internal/api/order/v1"
 	"github.com/bogdanovds/rocket_factory/order/internal/client/grpc/inventory/v1"
 	"github.com/bogdanovds/rocket_factory/order/internal/client/grpc/payment/v1"
-	"github.com/bogdanovds/rocket_factory/order/internal/repository/order"
+	"github.com/bogdanovds/rocket_factory/order/internal/migrator"
+	"github.com/bogdanovds/rocket_factory/order/internal/repository/postgres"
 	order2 "github.com/bogdanovds/rocket_factory/order/internal/service/order"
 	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
 )
@@ -34,6 +38,23 @@ const (
 )
 
 func main() {
+	// Подключение к PostgreSQL
+	db, err := connectDB()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("Error closing database connection: %v", err)
+		}
+	}()
+
+	// Применение миграций
+	m := migrator.New(db)
+	if err := m.UpEmbed(); err != nil {
+		log.Fatalf("Failed to apply migrations: %v", err)
+	}
+
 	paymentConn := createGRPCConn(paymentServicePort)
 	defer func(paymentConn *grpc.ClientConn) {
 		err := paymentConn.Close()
@@ -53,8 +74,8 @@ func main() {
 	paymentClient := payment.New(paymentConn)
 	inventoryClient := inventory.New(inventoryConn)
 
-	// OrderService
-	orderRepo := order.NewRepo()
+	// OrderService с PostgreSQL репозиторием
+	orderRepo := postgres.NewRepository(db)
 	orderService := order2.NewService(orderRepo, inventoryClient, paymentClient)
 	orderHandler := v1.NewHandler(orderService)
 
@@ -107,6 +128,37 @@ func main() {
 	}
 
 	log.Println("Server stopped")
+}
+
+func connectDB() (*sql.DB, error) {
+	host := getEnv("POSTGRES_HOST", "localhost")
+	port := getEnv("POSTGRES_PORT", "5433")
+	user := getEnv("POSTGRES_USER", "order-service-user")
+	password := getEnv("POSTGRES_PASSWORD", "order-service-password")
+	dbname := getEnv("POSTGRES_DB", "order-service")
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	// Проверяем подключение
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	log.Println("✅ Connected to PostgreSQL")
+	return db, nil
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }
 
 func createGRPCConn(port string) *grpc.ClientConn {

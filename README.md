@@ -11,33 +11,41 @@
 
 ```
 .
-├── inventory/          # Сервис управления деталями
-│   └── internal/
-│       ├── api/        # gRPC хендлеры
-│       ├── service/    # Бизнес-логика
-│       ├── repository/ # Хранилище данных
-│       ├── model/      # Модели сервисного слоя
-│       └── converter/  # Конвертеры между слоями
+├── deploy/
+│   └── compose/
+│       ├── core/           # Общая сеть микросервисов
+│       ├── inventory/      # MongoDB для InventoryService
+│       └── order/          # PostgreSQL для OrderService
 │
-├── order/              # Сервис заказов
+├── inventory/              # Сервис управления деталями (MongoDB)
 │   └── internal/
-│       ├── api/        # REST/HTTP хендлеры
-│       ├── service/    # Бизнес-логика
-│       ├── repository/ # Хранилище данных
-│       ├── client/     # Клиенты внешних сервисов
-│       ├── model/      # Модели сервисного слоя
-│       └── converter/  # Конвертеры между слоями
+│       ├── api/            # gRPC хендлеры
+│       ├── service/        # Бизнес-логика
+│       ├── repository/     # Хранилище данных (MongoDB)
+│       ├── model/          # Модели сервисного слоя
+│       └── converter/      # Конвертеры между слоями
 │
-├── payment/            # Сервис оплаты
+├── order/                  # Сервис заказов (PostgreSQL)
+│   ├── migrations/         # SQL миграции (goose)
 │   └── internal/
-│       ├── api/        # gRPC хендлеры
-│       ├── service/    # Бизнес-логика
-│       └── model/      # Модели
+│       ├── api/            # REST/HTTP хендлеры
+│       ├── service/        # Бизнес-логика
+│       ├── repository/     # Хранилище данных (PostgreSQL)
+│       ├── migrator/       # Миграции при старте
+│       ├── client/         # Клиенты внешних сервисов
+│       ├── model/          # Модели сервисного слоя
+│       └── converter/      # Конвертеры между слоями
 │
-└── shared/             # Общие компоненты
-    ├── api/            # OpenAPI спецификации
-    ├── proto/          # Protobuf определения
-    └── pkg/            # Сгенерированный код
+├── payment/                # Сервис оплаты
+│   └── internal/
+│       ├── api/            # gRPC хендлеры
+│       ├── service/        # Бизнес-логика
+│       └── model/          # Модели
+│
+└── shared/                 # Общие компоненты
+    ├── api/                # OpenAPI спецификации
+    ├── proto/              # Protobuf определения
+    └── pkg/                # Сгенерированный код
 ```
 
 ### Запуск проекта
@@ -48,29 +56,67 @@
 brew install go-task
 ```
 
+### Docker Compose
+
+Запуск инфраструктуры для локальной разработки:
+
+```bash
+# Поднять общую сеть
+task up-core
+
+# Поднять PostgreSQL для OrderService
+task up-order
+
+# Поднять MongoDB для InventoryService
+task up-inventory
+
+# Поднять всё вместе
+task up-all
+
+# Остановить всё
+task down-all
+```
+
+#### Конфигурация баз данных
+
+**PostgreSQL (OrderService):**
+- Host: `localhost:5432`
+- Database: `order-service`
+- User: `order-service-user`
+- Password: `order-service-password`
+
+**MongoDB (InventoryService):**
+- URI: `mongodb://inventory-service-user:inventory-service-password@localhost:27017`
+- Database: `inventory-service`
+
+### Миграции
+
+Миграции для OrderService выполняются автоматически при запуске сервиса с использованием [goose](https://github.com/pressly/goose).
+
+Миграции расположены в `order/migrations/`:
+- `20250404191615_create_uuid_ossp_extension.sql` - расширение для UUID
+- `20250404191624_create_orders_table.sql` - таблица заказов
+
 ### Доступные команды
 
 ```bash
-# Запуск юнит-тестов
-task test
+# Docker Compose
+task up-core           # Поднять общую сеть
+task up-order          # Поднять PostgreSQL
+task up-inventory      # Поднять MongoDB
+task up-all            # Поднять всё
+task down-all          # Остановить всё
 
-# Запуск тестов с покрытием
-task test-coverage
+# Тесты
+task test              # Запуск юнит-тестов
+task test-coverage     # Тесты с покрытием
+task test-coverage-report  # HTML-отчет о покрытии
+task test-api          # Запуск API тестов
 
-# Генерация HTML-отчета о покрытии
-task test-coverage-report
-
-# Запуск API тестов
-task test-api
-
-# Линтинг
-task lint
-
-# Форматирование кода
-task format
-
-# Генерация кода (proto + OpenAPI)
-task gen
+# Разработка
+task lint              # Линтинг
+task format            # Форматирование кода
+task gen               # Генерация кода (proto + OpenAPI)
 ```
 
 ### Покрытие тестами
@@ -96,6 +142,19 @@ task test-coverage
     - Запуск юнит-тестов
     - Проверка покрытия тестами
     - Обновление бейджа покрытия
+
+### Переменные окружения
+
+**OrderService:**
+- `POSTGRES_HOST` - хост PostgreSQL (default: `localhost`)
+- `POSTGRES_PORT` - порт PostgreSQL (default: `5432`)
+- `POSTGRES_USER` - пользователь (default: `order-service-user`)
+- `POSTGRES_PASSWORD` - пароль (default: `order-service-password`)
+- `POSTGRES_DB` - база данных (default: `order-service`)
+
+**InventoryService:**
+- `MONGO_URI` - URI для подключения к MongoDB (default: `mongodb://inventory-service-user:inventory-service-password@localhost:27017`)
+- `MONGO_DB` - база данных (default: `inventory-service`)
 
 ### Разработка
 

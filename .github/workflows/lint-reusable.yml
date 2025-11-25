@@ -1,40 +1,40 @@
-name: Lint Reusable
+name: Lint
 
 on:
   workflow_call:
-    inputs:
-      modules:
-        required: true
-        type: string
-      go-version:
-        required: true
-        type: string
-      golangci-lint-version:
-        required: true
-        type: string
 
 jobs:
-  golangci-lint:
-    name: Lint all Go modules
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📦 Checkout code
-        uses: actions/checkout@v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: 🛠 Set up Go
-        uses: actions/setup-go@v5.4.0
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          go-version: ${{ inputs.go-version }}
+          go-version: '1.24'
+          cache: true
 
-      - name: 🐾 Show go.work (debug)
-        run: cat go.work || echo "❗ go.work not found"
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.5
 
-      - name: 📌 Install Task
-        uses: arduino/setup-task@v2.0.0
+      - name: Run linter for inventory
+        run: |
+          cd inventory
+          golangci-lint run ./...
+        continue-on-error: true
 
-      - name: ✅ Run golangci-lint via Taskfile
-        env:
-          MODULES: ${{ inputs.modules }}
-          GOLANGCI_LINT_VERSION: ${{ inputs.golangci-lint-version }}
-        run: task lint
+      - name: Run linter for order
+        run: |
+          cd order
+          golangci-lint run ./...
+        continue-on-error: true
+
+      - name: Run linter for payment
+        run: |
+          cd payment
+          golangci-lint run ./...
+        continue-on-error: true

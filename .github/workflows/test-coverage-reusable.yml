@@ -1,0 +1,64 @@
+name: Test Coverage
+
+on:
+  workflow_call:
+    secrets:
+      GIST_TOKEN:
+        required: false
+
+jobs:
+  coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Test inventory with coverage
+        run: |
+          cd inventory
+          go test -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out | grep total | awk '{print $3}'
+
+      - name: Test order with coverage
+        run: |
+          cd order
+          go test -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out | grep total | awk '{print $3}'
+
+      - name: Test payment with coverage
+        run: |
+          cd payment
+          go test -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out | grep total | awk '{print $3}'
+
+      - name: Calculate total coverage
+        id: coverage
+        run: |
+          INVENTORY_COV=$(cd inventory && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          ORDER_COV=$(cd order && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          PAYMENT_COV=$(cd payment && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          
+          TOTAL=$(echo "scale=1; ($INVENTORY_COV + $ORDER_COV + $PAYMENT_COV) / 3" | bc)
+          echo "coverage=$TOTAL" >> $GITHUB_OUTPUT
+          echo "Total coverage: $TOTAL%"
+
+      - name: Update coverage badge
+        if: github.ref == 'refs/heads/main' && secrets.GIST_TOKEN != ''
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: YOUR_GIST_ID
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.coverage }}%
+          valColorRange: ${{ steps.coverage.outputs.coverage }}
+          maxColorRange: 100
+          minColorRange: 0
+

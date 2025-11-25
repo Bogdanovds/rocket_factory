@@ -1,0 +1,34 @@
+name: Test
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Test inventory
+        run: |
+          cd inventory
+          go test -v ./...
+
+      - name: Test order
+        run: |
+          cd order
+          go test -v ./...
+
+      - name: Test payment
+        run: |
+          cd payment
+          go test -v ./...
+

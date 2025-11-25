@@ -33,6 +33,7 @@ vars:
   OPEN_API_FILES: '{{.ROOT_DIR}}/shared/api/bundles'
 
   MODULES: assembly inventory order payment platform iam notification
+  TEST_MODULES: inventory order payment
 
 tasks:
   install-formatters:
@@ -430,3 +431,69 @@ tasks:
         
         echo
         echo "🎉 Все тесты API успешно выполнены!"
+
+  test:
+    desc: "🧪 Запуск юнит-тестов для всех модулей"
+    cmds:
+      - |
+        echo "🧪 Запуск юнит-тестов..."
+        set -e
+        for mod in {{.TEST_MODULES}}; do
+          if [ -d "$mod" ]; then
+            echo "🧪 Тестируем $mod"
+            (cd "$mod" && go test -v ./...) || exit 1
+          fi
+        done
+        echo "✅ Все тесты успешно пройдены!"
+
+  test-coverage:
+    desc: "📊 Запуск юнит-тестов с покрытием кода"
+    cmds:
+      - |
+        echo "📊 Запуск юнит-тестов с покрытием..."
+        echo ""
+        
+        TOTAL_COVERAGE=0
+        COUNT=0
+        
+        for mod in {{.TEST_MODULES}}; do
+          if [ -d "$mod" ]; then
+            echo "📊 Тестируем $mod с покрытием..."
+            (cd "$mod" && go test -cover ./... -coverprofile=coverage.out)
+            
+            if [ -f "$mod/coverage.out" ]; then
+              COVERAGE=$(cd "$mod" && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+              echo "📈 Покрытие $mod: ${COVERAGE}%"
+              TOTAL_COVERAGE=$(echo "$TOTAL_COVERAGE + $COVERAGE" | bc)
+              COUNT=$((COUNT + 1))
+            fi
+            echo ""
+          fi
+        done
+        
+        if [ $COUNT -gt 0 ]; then
+          AVG_COVERAGE=$(echo "scale=1; $TOTAL_COVERAGE / $COUNT" | bc)
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Среднее покрытие: ${AVG_COVERAGE}%"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        fi
+
+  test-coverage-report:
+    desc: "📊 Генерация HTML-отчета о покрытии тестами"
+    cmds:
+      - |
+        echo "📊 Генерация HTML-отчетов о покрытии..."
+        
+        for mod in {{.TEST_MODULES}}; do
+          if [ -d "$mod" ]; then
+            echo "📊 Генерируем отчет для $mod..."
+            (cd "$mod" && go test -cover ./... -coverprofile=coverage.out)
+            if [ -f "$mod/coverage.out" ]; then
+              (cd "$mod" && go tool cover -html=coverage.out -o coverage.html)
+              echo "✅ Отчет создан: $mod/coverage.html"
+            fi
+          fi
+        done
+        
+        echo ""
+        echo "🎉 HTML-отчеты созданы!"

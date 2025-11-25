@@ -132,7 +132,7 @@ func main() {
 
 func connectDB() (*sql.DB, error) {
 	host := getEnv("POSTGRES_HOST", "localhost")
-	port := getEnv("POSTGRES_PORT", "5432")
+	port := getEnv("POSTGRES_PORT", "5433")
 	user := getEnv("POSTGRES_USER", "order-service-user")
 	password := getEnv("POSTGRES_PASSWORD", "order-service-password")
 	dbname := getEnv("POSTGRES_DB", "order-service")

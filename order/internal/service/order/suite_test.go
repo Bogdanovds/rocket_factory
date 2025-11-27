@@ -37,4 +37,3 @@ func (s *OrderServiceTestSuite) TearDownTest() {
 func TestOrderServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(OrderServiceTestSuite))
 }
-

@@ -46,4 +46,3 @@ func (s *PartServiceTestSuite) TestGetPart_RepositoryError() {
 	s.Nil(part)
 	s.ErrorIs(err, model.ErrRepositoryOperation)
 }
-

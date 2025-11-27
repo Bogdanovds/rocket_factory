@@ -20,4 +20,3 @@ func connectPostgresDB(ctx context.Context, dsn string) (*sql.DB, error) {
 
 	return db, nil
 }
-

@@ -21,4 +21,3 @@ func (s *PaymentServiceTestSuite) SetupTest() {
 func TestPaymentServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(PaymentServiceTestSuite))
 }
-

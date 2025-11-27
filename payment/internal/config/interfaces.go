@@ -10,4 +10,3 @@ type LoggerConfig interface {
 type GRPCConfig interface {
 	Address() string
 }
-

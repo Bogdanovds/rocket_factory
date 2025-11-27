@@ -209,4 +209,3 @@ func (c *Closer) CloseAll(ctx context.Context) error {
 
 	return result
 }
-

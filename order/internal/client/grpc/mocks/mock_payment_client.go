@@ -22,4 +22,3 @@ func (m *MockPaymentClient) PayOrder(ctx context.Context, orderID, userID uuid.U
 	args := m.Called(ctx, orderID, userID, method)
 	return args.Get(0).(uuid.UUID), args.Error(1)
 }
-

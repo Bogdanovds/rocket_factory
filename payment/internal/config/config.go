@@ -44,4 +44,3 @@ func Load(path ...string) error {
 func AppConfig() *config {
 	return appConfig
 }
-

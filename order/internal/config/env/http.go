@@ -33,4 +33,3 @@ func (cfg *httpConfig) Address() string {
 func (cfg *httpConfig) ReadTimeout() string {
 	return cfg.raw.ReadTimeout
 }
-

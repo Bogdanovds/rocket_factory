@@ -36,4 +36,3 @@ func (d *diContainer) PaymentService(ctx context.Context) service.PaymentService
 
 	return d.paymentService
 }
-

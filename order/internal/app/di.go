@@ -161,4 +161,3 @@ func (d *diContainer) DB(ctx context.Context) *sql.DB {
 
 	return d.db
 }
-

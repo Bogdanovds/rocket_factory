@@ -87,4 +87,3 @@ func ToDocument(part *model.Part) *PartDocument {
 
 	return doc
 }
-

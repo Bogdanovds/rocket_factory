@@ -65,4 +65,3 @@ func (r *Repository) Get(ctx context.Context, id uuid.UUID) (*model.Order, error
 
 	return &order, nil
 }
-

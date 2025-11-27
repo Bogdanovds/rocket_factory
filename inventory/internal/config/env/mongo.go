@@ -45,4 +45,3 @@ func (cfg *mongoConfig) URI() string {
 func (cfg *mongoConfig) DatabaseName() string {
 	return cfg.raw.Database
 }
-

@@ -58,4 +58,3 @@ func WithLogger(logger Logger) Option {
 		c.Logger = logger
 	}
 }
-

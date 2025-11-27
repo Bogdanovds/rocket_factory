@@ -53,4 +53,3 @@ func NewPaymentClientConfig() (*paymentClientConfig, error) {
 func (cfg *paymentClientConfig) Address() string {
 	return net.JoinHostPort(cfg.raw.Host, cfg.raw.Port)
 }
-

@@ -39,4 +39,3 @@ func (m *MockOrderRepository) Update(ctx context.Context, order *model.Order) er
 	args := m.Called(ctx, order)
 	return args.Error(0)
 }
-

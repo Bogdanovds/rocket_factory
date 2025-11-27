@@ -25,4 +25,3 @@ func (r *Repository) Get(ctx context.Context, uuid string) (*model.Part, error) 
 
 	return ToServiceModel(&doc), nil
 }
-

@@ -124,4 +124,3 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 
 	return nil
 }
-

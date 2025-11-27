@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.uber.org/zap"
 
 	api "github.com/bogdanovds/rocket_factory/inventory/internal/api/inventory/v1"
 	"github.com/bogdanovds/rocket_factory/inventory/internal/config"
@@ -15,6 +16,7 @@ import (
 	"github.com/bogdanovds/rocket_factory/inventory/internal/service"
 	partService "github.com/bogdanovds/rocket_factory/inventory/internal/service/part"
 	"github.com/bogdanovds/rocket_factory/platform/pkg/closer"
+	"github.com/bogdanovds/rocket_factory/platform/pkg/logger"
 	inventoryV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/inventory/v1"
 )
 
@@ -59,7 +61,7 @@ func (d *diContainer) PartRepository(ctx context.Context) repository.PartReposit
 		// Заполняем начальные данные
 		if err := repo.SeedParts(ctx); err != nil {
 			// Логируем, но не падаем - данные могут уже существовать
-			fmt.Printf("Warning: Failed to seed parts: %v\n", err)
+			logger.Warn(ctx, "Failed to seed parts", zap.Error(err))
 		}
 
 		d.partRepository = repo
@@ -99,4 +101,3 @@ func (d *diContainer) MongoDBHandle(ctx context.Context) *mongo.Database {
 
 	return d.mongoDBHandle
 }
-

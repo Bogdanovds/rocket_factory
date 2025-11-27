@@ -55,4 +55,3 @@ func Disconnect(ctx context.Context, client *mongo.Client) error {
 	}
 	return nil
 }
-

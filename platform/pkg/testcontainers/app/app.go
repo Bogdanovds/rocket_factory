@@ -139,4 +139,3 @@ func DefaultHostConfig() func(hc *container.HostConfig) {
 		hc.AutoRemove = true
 	}
 }
-

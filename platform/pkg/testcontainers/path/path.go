@@ -26,4 +26,3 @@ func GetProjectRoot() string {
 		dir = parent
 	}
 }
-

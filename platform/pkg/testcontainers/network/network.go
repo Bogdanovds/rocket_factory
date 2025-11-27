@@ -34,4 +34,3 @@ func (n *Network) Name() string {
 func (n *Network) Remove(ctx context.Context) error {
 	return n.network.Remove(ctx)
 }
-

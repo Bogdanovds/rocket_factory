@@ -70,4 +70,3 @@ func buildPostgresURL(cfg *Config) string {
 		cfg.Database,
 	)
 }
-

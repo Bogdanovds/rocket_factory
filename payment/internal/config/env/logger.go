@@ -30,4 +30,3 @@ func (cfg *loggerConfig) Level() string {
 func (cfg *loggerConfig) AsJSON() bool {
 	return cfg.raw.AsJSON
 }
-

@@ -50,4 +50,3 @@ func defaultHostConfig() func(hc *container.HostConfig) {
 		hc.AutoRemove = true
 	}
 }
-

@@ -84,4 +84,3 @@ func (s *PaymentServiceTestSuite) TestPayOrder_UniqueTransactionIDs() {
 	s.NoError(err2)
 	s.NotEqual(resp1.TransactionUuid, resp2.TransactionUuid)
 }
-

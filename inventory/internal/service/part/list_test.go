@@ -129,4 +129,3 @@ func (s *PartServiceTestSuite) TestListParts_EmptyResult() {
 	s.NoError(err)
 	s.Empty(parts)
 }
-

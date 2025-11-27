@@ -65,4 +65,3 @@ func (cfg *postgresConfig) Database() string {
 func (cfg *postgresConfig) SSLMode() string {
 	return cfg.raw.SSLMode
 }
-

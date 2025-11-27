@@ -35,4 +35,3 @@ func (m *MockPartService) ListParts(ctx context.Context, filter *model.PartsFilt
 	}
 	return args.Get(0).([]*model.Part), args.Error(1)
 }
-

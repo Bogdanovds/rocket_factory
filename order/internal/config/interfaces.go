@@ -27,4 +27,3 @@ type PostgresConfig interface {
 type GRPCClientConfig interface {
 	Address() string
 }
-

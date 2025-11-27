@@ -30,4 +30,3 @@ const (
 	PostgresUsernameKey  = "POSTGRES_USER"
 	PostgresPasswordKey  = "POSTGRES_PASSWORD" //nolint:gosec
 )
-

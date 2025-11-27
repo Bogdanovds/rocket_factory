@@ -21,4 +21,3 @@ func connectMongoClient(ctx context.Context, uri string) (*mongo.Client, error) 
 
 	return client, nil
 }
-

@@ -137,4 +137,3 @@ func (a *App) runHTTPServer(ctx context.Context) error {
 
 	return nil
 }
-

@@ -26,4 +26,3 @@ func (m *MockPaymentService) PayOrder(ctx context.Context, req *paymentV1.PayOrd
 	}
 	return args.Get(0).(*paymentV1.PayOrderResponse), args.Error(1)
 }
-

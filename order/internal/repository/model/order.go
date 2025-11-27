@@ -22,4 +22,3 @@ type Order struct {
 	PaymentMethod string
 	TransactionID uuid.UUID
 }
-

@@ -16,4 +16,3 @@ type MongoConfig interface {
 	URI() string
 	DatabaseName() string
 }
-

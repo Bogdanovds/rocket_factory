@@ -58,4 +58,3 @@ func buildMongoURI(cfg *Config) string {
 		cfg.AuthDB,
 	)
 }
-

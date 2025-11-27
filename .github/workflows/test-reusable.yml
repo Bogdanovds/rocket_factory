@@ -2,6 +2,13 @@ name: Test
 
 on:
   workflow_call:
+    inputs:
+      modules:
+        required: true
+        type: string
+      go-version:
+        required: true
+        type: string
 
 jobs:
   test:
@@ -14,21 +21,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: ${{ inputs.go-version }}
           cache: true
 
-      - name: Test inventory
-        run: |
-          cd inventory
-          go test -v ./...
+      - name: 📌 Install Task
+        uses: arduino/setup-task@v2.0.0
 
-      - name: Test order
-        run: |
-          cd order
-          go test -v ./...
-
-      - name: Test payment
-        run: |
-          cd payment
-          go test -v ./...
-
+      - name: Run tests
+        env:
+          MODULES: ${{ inputs.modules }}
+        run: task test

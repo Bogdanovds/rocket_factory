@@ -2,6 +2,13 @@ name: Test Coverage
 
 on:
   workflow_call:
+    inputs:
+      modules:
+        required: true
+        type: string
+      go-version:
+        required: true
+        type: string
     secrets:
       GIST_TOKEN:
         required: false
@@ -17,48 +24,20 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: ${{ inputs.go-version }}
           cache: true
 
-      - name: Test inventory with coverage
-        run: |
-          cd inventory
-          go test -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out | grep total | awk '{print $3}'
+      - name: 📌 Install Task
+        uses: arduino/setup-task@v2.0.0
 
-      - name: Test order with coverage
-        run: |
-          cd order
-          go test -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out | grep total | awk '{print $3}'
+      - name: Run tests with coverage
+        env:
+          MODULES: ${{ inputs.modules }}
+        run: task test-coverage
 
-      - name: Test payment with coverage
-        run: |
-          cd payment
-          go test -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out | grep total | awk '{print $3}'
-
-      - name: Calculate total coverage
+      - name: Get total coverage
         id: coverage
         run: |
-          INVENTORY_COV=$(cd inventory && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          ORDER_COV=$(cd order && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          PAYMENT_COV=$(cd payment && go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          
-          TOTAL=$(echo "scale=1; ($INVENTORY_COV + $ORDER_COV + $PAYMENT_COV) / 3" | bc)
+          TOTAL=$(cat coverage/total.out 2>/dev/null | grep -v "^mode:" | awk -F' ' '{cov += $3; stmts += $2} END {if (stmts > 0) print cov/stmts*100; else print 0}' | cut -d'.' -f1)
           echo "coverage=$TOTAL" >> $GITHUB_OUTPUT
           echo "Total coverage: $TOTAL%"
-
-      - name: Update coverage badge
-        if: github.ref == 'refs/heads/main' && secrets.GIST_TOKEN != ''
-        uses: schneegans/dynamic-badges-action@v1.7.0
-        with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gistID: YOUR_GIST_ID
-          filename: coverage.json
-          label: coverage
-          message: ${{ steps.coverage.outputs.coverage }}%
-          valColorRange: ${{ steps.coverage.outputs.coverage }}
-          maxColorRange: 100
-          minColorRange: 0
-

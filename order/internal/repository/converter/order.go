@@ -38,4 +38,3 @@ func ToRepoModel(order *model.Order) *repoModel.Order {
 		TransactionID: order.TransactionID,
 	}
 }
-

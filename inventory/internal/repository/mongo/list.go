@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -15,7 +16,11 @@ func (r *Repository) List(ctx context.Context) ([]*model.Part, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to find parts: %w", err)
 	}
-	defer cursor.Close(ctx)
+	defer func() {
+		if cerr := cursor.Close(ctx); cerr != nil {
+			log.Printf("failed to close cursor: %v", cerr)
+		}
+	}()
 
 	var docs []PartDocument
 	if err := cursor.All(ctx, &docs); err != nil {
@@ -29,4 +34,3 @@ func (r *Repository) List(ctx context.Context) ([]*model.Part, error) {
 
 	return parts, nil
 }
-

@@ -84,4 +84,3 @@ func (m *Migrator) Status(migrationsDir string) error {
 
 	return nil
 }
-

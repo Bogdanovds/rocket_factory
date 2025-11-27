@@ -1,58 +1,50 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"log"
-	"net"
-	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	"go.uber.org/zap"
 
-	"github.com/bogdanovds/rocket_factory/payment/internal/service/payment"
-	paymentV1 "github.com/bogdanovds/rocket_factory/shared/pkg/proto/payment/v1"
+	"github.com/bogdanovds/rocket_factory/payment/internal/app"
+	"github.com/bogdanovds/rocket_factory/payment/internal/config"
+	"github.com/bogdanovds/rocket_factory/platform/pkg/closer"
+	"github.com/bogdanovds/rocket_factory/platform/pkg/logger"
 )
 
-const grpcPort = 50052
-
 func main() {
-	// Create payment service
-	paymentService := payment.NewPaymentService()
-
-	// Create gRPC server with API
-	grpcServer := grpc.NewServer()
-	paymentV1.RegisterPaymentServiceServer(grpcServer, paymentService)
-	reflection.Register(grpcServer)
-
-	// Start listening
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	err := config.Load()
 	if err != nil {
-		log.Printf("failed to listen: %v\n", err)
+		panic(fmt.Errorf("failed to load config: %w", err))
+	}
+
+	appCtx, appCancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer appCancel()
+	defer gracefulShutdown()
+
+	closer.Configure(syscall.SIGINT, syscall.SIGTERM)
+
+	a, err := app.New(appCtx)
+	if err != nil {
+		logger.Error(appCtx, "❌ Не удалось создать приложение", zap.Error(err))
 		return
 	}
-	defer func() {
-		if cerr := lis.Close(); cerr != nil {
-			log.Printf("failed to close listener: %v\n", cerr)
-		}
-	}()
 
-	// Start server
-	go func() {
-		log.Printf("🚀 Payment gRPC server listening on port %d\n", grpcPort)
-		err = grpcServer.Serve(lis)
-		if err != nil {
-			log.Printf("failed to serve: %v\n", err)
-			return
-		}
-	}()
+	err = a.Run(appCtx)
+	if err != nil {
+		logger.Error(appCtx, "❌ Ошибка при работе приложения", zap.Error(err))
+		return
+	}
+}
 
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("🛑 Shutting down gRPC server...")
-	grpcServer.GracefulStop()
-	log.Println("✅ Server stopped")
+func gracefulShutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := closer.CloseAll(ctx); err != nil {
+		logger.Error(ctx, "❌ Ошибка при завершении работы", zap.Error(err))
+	}
 }

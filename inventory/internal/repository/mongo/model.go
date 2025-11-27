@@ -37,4 +37,3 @@ type ManufacturerDocument struct {
 	Country string `bson:"country"`
 	Website string `bson:"website"`
 }
-

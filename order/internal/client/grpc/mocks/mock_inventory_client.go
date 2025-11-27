@@ -27,4 +27,3 @@ func (m *MockInventoryClient) ListParts(ctx context.Context, partIDs []uuid.UUID
 	}
 	return args.Get(0).([]*model.Part), args.Error(1)
 }
-

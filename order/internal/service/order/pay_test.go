@@ -138,4 +138,3 @@ func (s *OrderServiceTestSuite) TestPayOrder_PaymentFailed() {
 	s.Error(err)
 	s.Contains(err.Error(), "payment failed")
 }
-

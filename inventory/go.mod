@@ -4,9 +4,13 @@ go 1.24.4
 
 require (
 	github.com/bogdanovds/rocket_factory/shared v0.0.0-20251125173229-56bf37d35439
+	github.com/caarlos0/env/v11 v11.3.1
+	github.com/joho/godotenv v1.5.1
+	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.51.0
 	github.com/stretchr/testify v1.11.1
 	go.mongodb.org/mongo-driver v1.17.6
+	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.77.0
 	google.golang.org/protobuf v1.36.10
 )
@@ -24,6 +28,7 @@ require (
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/net v0.46.1-0.20251013234738-63d1a5100f82 // indirect
 	golang.org/x/sync v0.17.0 // indirect

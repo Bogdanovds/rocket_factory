@@ -93,4 +93,3 @@ func (s *OrderServiceTestSuite) TestCreateOrder_RepositoryError() {
 	s.Error(err)
 	s.Contains(err.Error(), "repository error")
 }
-

@@ -103,4 +103,3 @@ func (s *OrderServiceTestSuite) TestCancelOrder_RepositoryError() {
 	s.Error(err)
 	s.Contains(err.Error(), "repository error")
 }
-

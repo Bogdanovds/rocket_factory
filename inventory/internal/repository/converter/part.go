@@ -79,4 +79,3 @@ func ToServiceModelList(parts []*repoModel.Part) []*model.Part {
 	}
 	return result
 }
-

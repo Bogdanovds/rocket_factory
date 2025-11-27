@@ -30,4 +30,3 @@ func (s *PartServiceTestSuite) TearDownTest() {
 func TestPartServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(PartServiceTestSuite))
 }
-

@@ -51,4 +51,3 @@ func (m *MockOrderService) CancelOrder(ctx context.Context, orderID uuid.UUID) e
 	args := m.Called(ctx, orderID)
 	return args.Error(0)
 }
-

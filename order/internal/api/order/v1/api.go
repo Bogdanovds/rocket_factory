@@ -3,16 +3,16 @@ package v1
 import (
 	"net/http"
 
-	"github.com/bogdanovds/rocket_factory/order/internal/service/order"
+	"github.com/bogdanovds/rocket_factory/order/internal/service"
 	orderV1 "github.com/bogdanovds/rocket_factory/shared/pkg/openapi/order/v1"
 )
 
 type Handler struct {
-	service *order.Service
+	service service.Service
 }
 
-func NewHandler(service *order.Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(svc service.Service) *Handler {
+	return &Handler{service: svc}
 }
 
 func badRequest(msg string) *orderV1.BadRequestError {

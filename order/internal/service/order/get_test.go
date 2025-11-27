@@ -40,4 +40,3 @@ func (s *OrderServiceTestSuite) TestGetOrder_NotFound() {
 	s.Nil(order)
 	s.ErrorIs(err, model.ErrOrderNotFound)
 }
-

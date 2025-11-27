@@ -35,4 +35,3 @@ func (m *MockPartRepository) List(ctx context.Context) ([]*model.Part, error) {
 	}
 	return args.Get(0).([]*model.Part), args.Error(1)
 }
-
